@@ -1,0 +1,40 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.31.2.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 1de793727d0815318c1a694e846daf89c74df1cfe44c1871fa2126b5b3db1ec8
+
+name:           generic-override
+version:        0.0.0.0
+synopsis:       Provides functionality for overriding instances for generic derivation
+description:    Please see the README on GitHub at <https://github.com/estatico/generic-override#readme>
+category:       Generics
+homepage:       https://github.com/estatico/generic-override#readme
+bug-reports:    https://github.com/estatico/generic-override/issues
+author:         Cary Robbins
+maintainer:     carymrobbins@gmail.com
+copyright:      2020 Estatico Studios LLC
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/estatico/generic-override
+
+library
+  exposed-modules:
+      Data.Override
+      Data.Override.Internal
+  other-modules:
+      Paths_generic_override
+  hs-source-dirs:
+      src
+  build-depends:
+      base
+  default-language: Haskell2010
