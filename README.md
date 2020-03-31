@@ -1,7 +1,16 @@
 # generic-override
 
+[![Hackage](https://img.shields.io/hackage/v/generic-override.svg?logo=haskell)](https://hackage.haskell.org/package/generic-override)
+[![Build](https://img.shields.io/travis/estatico/generic-override.svg?logo=travis)](http://travis-ci.org/estatico/generic-override)
+
 For the associated blog post describing how this works, see
 [Overriding Type Class Instances](http://caryrobbins.com/dev/overriding-type-class-instances-2/).
+
+-------------------------
+
+This repo contains the following libraries -
+* [generic-override](https://hackage.haskell.org/package/generic-override)
+* [generic-override-aeson](https://hackage.haskell.org/package/generic-override-aeson)
 
 -------------------------
 
