@@ -1,9 +1,7 @@
-module Data.Override (module X) where
-
-import Data.Override.Internal as X
-  ( Override(Override), unOverride
-  , Overridden(Overridden), unOverridden
+-- | The public, stable generic-override API.
+module Data.Override
+  ( Override(Override)
   , As
-  , Using
-  , override
-  )
+  ) where
+
+import Data.Override.Internal (Override(Override), As)

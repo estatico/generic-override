@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: a57646e4d43256ebf1c3294a4fbd5eba01699b8dfb188e6680eb0630486de983
+-- hash: e4d61674045dc008247006bc8c0282896269636e872f7180282d48da40c80d9e
 
 name:           generic-override-aeson
-version:        0.0.0.0
+version:        0.0.0.1
 synopsis:       Provides orphan instances necessary for integrating generic-override and aeson
 description:    Please see the README on GitHub at <https://github.com/estatico/generic-override#readme>
 category:       Generics

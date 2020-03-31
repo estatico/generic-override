@@ -15,7 +15,7 @@
 module Data.Override.Aeson where
 
 import Data.Coerce (Coercible, coerce)
-import Data.Override (Override, Overridden(Overridden), Using)
+import Data.Override.Internal (Override, Overridden(Overridden), Using)
 import GHC.Generics (Generic, Rep)
 import qualified Data.Aeson as Aeson
 

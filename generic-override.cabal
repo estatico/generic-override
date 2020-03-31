@@ -4,10 +4,10 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: e2be6792d413d9537a8da94d313a2a0a5d8f6f2f3fc7de6f6718dd22a2700b1f
+-- hash: 09d0909b116a83d5079cad75cf98219ad90302fd4d353a7d31f9ab79283b0c35
 
 name:           generic-override
-version:        0.0.0.0
+version:        0.0.0.1
 synopsis:       Provides functionality for overriding instances for generic derivation
 description:    Please see the README on GitHub at <https://github.com/estatico/generic-override#readme>
 category:       Generics

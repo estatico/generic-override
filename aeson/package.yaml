@@ -1,6 +1,6 @@
 # GENERATED HEADER START
 name:                generic-override-aeson
-version:             0.0.0.0
+version:             0.0.0.1
 github:              "estatico/generic-override"
 license:             BSD3
 author:              "Cary Robbins"

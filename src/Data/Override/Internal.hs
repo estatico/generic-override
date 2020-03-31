@@ -1,3 +1,9 @@
+-- | This is the internal generic-override API and should be considered
+-- unstable and subject to change. This module is exposed for library integrators
+-- (e.g. generic-override-aeson). In general, unless you are integrating
+-- some type class with generic-override, you should prefer to use the
+-- public, stable API provided by 'Data.Override'.
+
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DerivingStrategies #-}
