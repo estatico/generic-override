@@ -1,3 +1,6 @@
+-- | This module contains only orphan instances. It is only needed to
+-- be imported where you are overriding instances for aeson generic derivation.
+
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}

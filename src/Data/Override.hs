@@ -6,5 +6,4 @@ import Data.Override.Internal as X
   , As
   , Using
   , override
-  , overridden
   )

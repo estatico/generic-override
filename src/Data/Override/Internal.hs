@@ -18,6 +18,9 @@ import Data.Type.Equality (type (==))
 import GHC.Generics
 import GHC.TypeLits (Symbol)
 
+-- | The feature of this library. For use with DerivingVia.
+-- Apply it to a type 'a' and supply a type-level list of instance
+-- overrides 'xs'.
 newtype Override a (xs :: [*]) = Override a
   deriving stock (Show, Eq)
 
@@ -29,14 +32,19 @@ unOverride (Override a) = a
 override :: a -> proxy xs -> Override a xs
 override a _ = Override a
 
+-- | Used to construct a type-level override. Usually used infix.
+-- The 'o' should be either a type (kind '*') or a type-level string
+-- (kind 'Symbol').
 data As (o :: k) n
 
+-- | Used at the leaf nodes of a generic 'Rep'
 newtype Overridden (ms :: Maybe Symbol) a (xs :: [*]) = Overridden a
 
 -- | Unwrap an 'Overridden' value.
 unOverridden :: Overridden ms a xs -> a
 unOverridden (Overridden a) = a
 
+-- | Same as 'override' but for 'Overridden' types.
 overridden
   :: forall a (ms :: Maybe Symbol) (xs :: [*]) proxy0 proxy1.
      a -> proxy0 ms -> proxy1 xs -> Overridden ms a xs

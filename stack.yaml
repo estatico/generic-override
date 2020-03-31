@@ -3,3 +3,5 @@ resolver: lts-14.12
 packages:
 - ./
 - ./aeson
+
+pvp-bounds: both
