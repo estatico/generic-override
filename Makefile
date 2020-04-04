@@ -1,17 +1,13 @@
-.PHONY: default license yaml clean build test
+.PHONY: default yaml clean build test
 
-default: license yaml build test
-
-# Synchronizes the LICENSE file to all subprojects
-license:
-	cp ./LICENSE ./aeson/
+default: yaml build test
 
 # Ensures the package.yaml headers are up-to-date.
 yaml:
 	./tools/gen-package-yaml-header
 
 # Build all targets, including tests.
-build: license yaml
+build: yaml
 	stack test --no-run-tests --pedantic
 
 # Runs the test suite.
