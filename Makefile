@@ -17,3 +17,8 @@ test: build
 # Clean build artifacts
 clean:
 	stack clean
+
+# Used in the 'script' portion of .travis.yml
+ci:
+	./tools/gen-package-yaml-header --validate
+	stack --no-terminal --skip-ghc-check test --pedantic
