@@ -2,6 +2,30 @@
 
 set -e
 
+usage() {
+  echo "Usage: $0 [--validate]"
+}
+
+case "$#" in
+  0) ;; # noop
+  1)
+    case "$1" in
+      --help|-h) usage; exit;;
+      --validate) validate=1;;
+      *)
+        >&2 echo "Unexpected argument: $1"
+        >&2 usage
+        exit 1
+        ;;
+    esac
+    ;;
+  *)
+    >&2 echo "Invalid arguments"
+    >&2 usage
+    exit 1
+    ;;
+esac
+
 cd "$(dirname $0)/.."
 
 version=$(cat version.txt)
@@ -39,5 +63,12 @@ for subproject in "${subprojects[@]}"; do
   packageYamlHeader "$subproject" > "$tmp"
   grep -F -A9999 '# GENERATED HEADER END' "$subproject/package.yaml" \
     | tail -n+2 >> "$tmp"
-  mv "$tmp" "$subproject/package.yaml"
+  if [ -n "$validate" ]; then
+    if ! diff -u "$subproject/package.yaml" "$tmp"; then
+      >&2 echo "Failed validation: $subproject/package.yaml"
+      exit 1
+    fi
+  else
+    mv "$tmp" "$subproject/package.yaml"
+  fi
 done
