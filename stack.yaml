@@ -5,3 +5,7 @@ packages:
 - ./aeson
 
 pvp-bounds: both
+
+extra-deps:
+- generic-deriving-1.14
+- th-abstraction-0.4.2.0

@@ -14,8 +14,11 @@ synopsis:            Provides orphan instances necessary for integrating generic
 
 dependencies:
 - base >= 4.7 && < 5
-- aeson
+- aeson >= 1.4.5.0 && < 2
 - generic-override
+
+ghc-options:
+- -Wall
 
 library:
   source-dirs: src

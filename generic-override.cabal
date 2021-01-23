@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 09d0909b116a83d5079cad75cf98219ad90302fd4d353a7d31f9ab79283b0c35
+-- hash: eb4f19c70757013db7cd1173c0a9e82239c893ca8634dcefcafef6aaefb34925
 
 name:           generic-override
 version:        0.0.0.1
@@ -31,10 +31,28 @@ library
   exposed-modules:
       Data.Override
       Data.Override.Internal
+      Data.Override.Monoid
   other-modules:
       Paths_generic_override
   hs-source-dirs:
       src
+  ghc-options: -Wall
   build-depends:
       base >=4.7 && <5
+    , generic-deriving >=1.14 && <2
+  default-language: Haskell2010
+
+test-suite generic-override-aeson-test
+  type: exitcode-stdio-1.0
+  main-is: Test.hs
+  other-modules:
+      Paths_generic_override
+  hs-source-dirs:
+      test
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      base >=4.7 && <5
+    , generic-deriving >=1.14 && <2
+    , generic-override
+    , hspec
   default-language: Haskell2010

@@ -3,7 +3,21 @@
 # For more information, please see the documentation at:
 #   https://docs.haskellstack.org/en/stable/lock_files
 
-packages: []
+packages:
+- completed:
+    hackage: generic-deriving-1.14@sha256:4fcdf02df52518bf5395aefb93465893c5759869b4a6a5bc507bb738a4f7b00e,6667
+    pantry-tree:
+      size: 2248
+      sha256: f9e8d4f364f9bd9e22e184748e8792a5931f749da199e7edfe3ec69d73a34487
+  original:
+    hackage: generic-deriving-1.14
+- completed:
+    hackage: th-abstraction-0.4.2.0@sha256:2c754cd15370f8c59c8e6c37d44428a78d0b4afc94e13b3958a1a50cd16f6e84,2124
+    pantry-tree:
+      size: 670
+      sha256: 4d7de058f3dd57de2a89ea92e812c37ab5418d2fbac620db8c815e7eb4d856ac
+  original:
+    hackage: th-abstraction-0.4.2.0
 snapshots:
 - completed:
     size: 545658
