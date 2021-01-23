@@ -14,8 +14,11 @@ import Test.Hspec
 
 main :: IO ()
 main = hspec do
-  describe "Override machinery" do
-    it "Rec1" testRec1
+  describe "Override" do
+    describe "Semigroup" do
+      it "Rec1" testRec1'Semigroup
+    describe "Monoid" do
+      it "Rec1" testRec1'Monoid
 
 -- | Overriding instances by type.
 data Rec1 = Rec1
@@ -27,9 +30,15 @@ data Rec1 = Rec1
             '[ Bool `As` Any
              ]
 
-testRec1 :: IO ()
-testRec1 = do
-  mempty `shouldBe` Rec1 { foo = "", bar = False }
+testRec1'Semigroup :: IO ()
+testRec1'Semigroup = do
   Rec1 { foo = "a",  bar = False }
     <> Rec1 { foo = "b",  bar = True }
+      `shouldBe` Rec1 { foo = "ab", bar = True }
+
+testRec1'Monoid :: IO ()
+testRec1'Monoid = do
+  mempty `shouldBe` Rec1 { foo = "", bar = False }
+  Rec1 { foo = "a",  bar = False }
+    `mappend` Rec1 { foo = "b",  bar = True }
       `shouldBe` Rec1 { foo = "ab", bar = True }
