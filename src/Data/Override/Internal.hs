@@ -28,7 +28,6 @@ import GHC.TypeLits (Symbol)
 -- Apply it to a type 'a' and supply a type-level list of instance
 -- overrides 'xs'.
 newtype Override a (xs :: [*]) = Override a
-  deriving stock (Show, Eq)
 
 -- | Unwrap an 'Override' value.
 unOverride :: Override a xs -> a
