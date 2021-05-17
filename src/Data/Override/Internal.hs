@@ -43,6 +43,9 @@ override a _ = Override a
 -- (kind 'Symbol').
 data As (o :: k) n
 
+-- | Used to wrap a field into a something of kind @* -> *@, for example another newtype.
+data With (o :: k) (w :: * -> *)
+
 -- | Used at the leaf nodes of a generic 'Rep'
 newtype Overridden (ms :: Maybe Symbol) a (xs :: [*]) = Overridden a
 
@@ -101,6 +104,12 @@ type family Using (ms :: Maybe Symbol) (x :: *) (xs :: [*]) where
   Using ms x (As (o :: Symbol) n ': xs) =
     If (ms == 'Just o) n (Using ms x xs)
 
+  Using ms x (With (o :: Symbol) w ': xs) =
+    If (ms == 'Just o) (w x) (Using ms x xs)
+
   -- Override the matching type.
   Using ms x (As (o :: *) n ': xs) =
     If (x == o) n (Using ms x xs)
+
+  Using ms x (With (o :: *) w ': xs) =
+    If (x == o) (w x) (Using ms x xs)

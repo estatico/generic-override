@@ -2,6 +2,7 @@
 module Data.Override
   ( Override(Override)
   , As
+  , With
   ) where
 
-import Data.Override.Internal (Override(Override), As)
+import Data.Override.Internal (Override(Override), As, With)
