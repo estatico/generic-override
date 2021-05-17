@@ -15,7 +15,7 @@ module Main where
 
 import Data.Aeson (FromJSON(parseJSON), ToJSON(toJSON), Result(Success), fromJSON)
 import Data.Aeson.QQ.Simple (aesonQQ)
-import Data.Override (Override(Override), As)
+import Data.Override (Override(Override), As, With)
 import Data.Override.Aeson ()
 import Data.Text (Text)
 import GHC.Generics (Generic)
@@ -33,6 +33,7 @@ main = hspec do
     it "Rec4" testRec4
     it "Rec5" testRec5
     it "Rec6" testRec6
+    it "Rec7" testRec6
 
 newtype Uptext = Uptext { unUptext :: Text }
 
@@ -198,6 +199,31 @@ data Rec6 = Rec6
 testRec6 :: IO ()
 testRec6 = do
   let r = Rec6 { foo = 1, bar = "hi", baz = "bye" }
+  let j = [aesonQQ|
+    {
+      "foo": "1",
+      "bar": ["h", "i"],
+      "baz": "bye"
+    }
+  |]
+  toJSON r `shouldBe` j
+  fromJSON j `shouldBe` Success r
+
+-- Test 'Override' for both 'ToJSON' and 'FromJSON'.
+data Rec7 = Rec7
+  { foo :: Int
+  , bar :: String
+  , baz :: Text
+  } deriving stock (Show, Eq, Generic)
+    deriving (ToJSON, FromJSON)
+      via Override Rec7
+            '[ "foo" `With` Shown
+             , String `With` CharArray
+             ]
+
+testRec7 :: IO ()
+testRec7 = do
+  let r = Rec7 { foo = 1, bar = "hi", baz = "bye" }
   let j = [aesonQQ|
     {
       "foo": "1",
