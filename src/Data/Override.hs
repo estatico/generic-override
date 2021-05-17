@@ -6,3 +6,4 @@ module Data.Override
   ) where
 
 import Data.Override.Internal (Override(Override), As, With)
+import Data.Override.Instances ()

@@ -1,10 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.31.2.
+-- This file has been generated from package.yaml by hpack version 0.34.4.
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 09d0909b116a83d5079cad75cf98219ad90302fd4d353a7d31f9ab79283b0c35
+-- hash: 759b0f455b40023e9dd63e6b4fb905cf28346ec0edae9205283e4ec096e8c4f9
 
 name:           generic-override
 version:        0.0.0.1
@@ -30,6 +30,7 @@ source-repository head
 library
   exposed-modules:
       Data.Override
+      Data.Override.Instances
       Data.Override.Internal
   other-modules:
       Paths_generic_override
