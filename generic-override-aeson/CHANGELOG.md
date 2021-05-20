@@ -1,6 +1,6 @@
 # Changelog for generic-override-aeson
 
-## 0.0.0.1
+## 0.0.0.2
 
 * Bumping dependency bounds to support aeson 1.5
 
