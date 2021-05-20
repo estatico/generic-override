@@ -5,7 +5,7 @@
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Data.Override.Instances where
+module Data.Override.Instances () where
 
 import Data.Coerce (Coercible, coerce)
 import Data.Function (on)
