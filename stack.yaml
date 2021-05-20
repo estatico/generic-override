@@ -1,7 +1,7 @@
 resolver: lts-14.12
 
 packages:
-- ./
-- ./aeson
+- ./generic-override
+- ./generic-override-aeson
 
 pvp-bounds: both

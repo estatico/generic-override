@@ -1,13 +1,12 @@
-.PHONY: default yaml clean build test
+.PHONY: default sync build test clean ci
 
-default: yaml build test
+default: sync build test
 
-# Ensures the package.yaml headers are up-to-date.
-yaml:
-	./tools/gen-package-yaml-header
+sync:
+	./tools/sync
 
 # Build all targets, including tests.
-build: yaml
+build: sync
 	stack test --no-run-tests --pedantic
 
 # Runs the test suite.
@@ -20,5 +19,5 @@ clean:
 
 # Used in the 'script' portion of .travis.yml
 ci:
-	./tools/gen-package-yaml-header --validate
+	./tools/sync --validate
 	stack --no-terminal --skip-ghc-check test --pedantic

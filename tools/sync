@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+set -e
+
+while [ $# -ne 0 ]; do
+  case "$1" in
+    --validate) validate=1; shift;;
+    *)
+      >&2 echo "Unexpected argument: $1"
+      exit 1
+      ;;
+  esac
+done
+
+packages=(
+  generic-override
+  generic-override-aeson
+)
+
+files=(
+  LICENSE
+  README.md
+)
+
+if [ -n "$validate" ]; then
+  for p in "${packages[@]}"; do
+    for f in "${files[@]}"; do
+      if ! diff "$f" "$p/$f"; then
+        >&2 echo "sync required for $p/$f"
+        exit 1
+      fi
+    done
+  done
+else
+  for p in "${packages[@]}"; do
+    cp "${files[@]}" "$p/"
+  done
+fi
