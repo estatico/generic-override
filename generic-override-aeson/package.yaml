@@ -1,4 +1,3 @@
-# GENERATED HEADER START
 name:                generic-override-aeson
 version:             0.0.0.1
 github:              "estatico/generic-override"
@@ -8,13 +7,16 @@ maintainer:          "carymrobbins@gmail.com"
 copyright:           "2020 Estatico Studios LLC"
 category:            Generics
 description:         Please see the README on GitHub at <https://github.com/estatico/generic-override#readme>
-# GENERATED HEADER END
 
 synopsis:            Provides orphan instances necessary for integrating generic-override and aeson
 
+extra-source-files:
+  - README.md
+  - CHANGELOG.md
+
 dependencies:
 - base >= 4.7 && < 5
-- aeson
+- aeson >= 1.4 && < 1.6
 - generic-override
 
 library:

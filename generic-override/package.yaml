@@ -1,4 +1,3 @@
-# GENERATED HEADER START
 name:                generic-override
 version:             0.0.0.1
 github:              "estatico/generic-override"
@@ -8,16 +7,27 @@ maintainer:          "carymrobbins@gmail.com"
 copyright:           "2020 Estatico Studios LLC"
 category:            Generics
 description:         Please see the README on GitHub at <https://github.com/estatico/generic-override#readme>
-# GENERATED HEADER END
 
 synopsis:            Provides functionality for overriding instances for generic derivation
 
 extra-source-files:
 - README.md
-- ChangeLog.md
+- CHANGELOG.md
 
 dependencies:
 - base >= 4.7 && < 5
 
 library:
   source-dirs: src
+
+tests:
+  generic-override-test:
+    main:                Test.hs
+    source-dirs:         test
+    ghc-options:
+      - -threaded
+      - -rtsopts
+      - -with-rtsopts=-N
+    dependencies:
+      - generic-override
+      - hspec
