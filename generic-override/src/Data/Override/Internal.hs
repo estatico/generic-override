@@ -20,6 +20,7 @@
 module Data.Override.Internal where
 
 import Data.Type.Bool (If)
+import Data.Coerce
 import Data.Type.Equality (type (==))
 import GHC.Generics
 import GHC.TypeLits (Symbol)
@@ -86,15 +87,43 @@ instance (GOverride xs f, GOverride xs g) => GOverride xs (f :*: g) where
   overrideFrom (f :*: g) = overrideFrom @xs f :*: overrideFrom @xs g
   overrideTo (f :*: g) = overrideTo @xs f :*: overrideTo @xs g
 
-instance GOverride xs (M1 S ('MetaSel ms su ss ds) (K1 R c)) where
-  type OverrideRep xs (M1 S ('MetaSel ms su ss ds) (K1 R c)) =
-    M1 S ('MetaSel ms su ss ds) (K1 R (Overridden ms c xs))
-  overrideFrom (M1 (K1 x)) = M1 (K1 (Overridden @ms x))
-  overrideTo (M1 (K1 (Overridden x))) = M1 (K1 x)
+-- | Auxiliary family to put Overridden under Maybe.
+--
+-- This is required to preserve aeson's omitNothingFields behavior
+-- if the user has enabled it.
+type family OverrideField ms c xs where
+  OverrideField ms (Maybe c) xs = Maybe (Overridden ms c xs)
+  OverrideField ms c xs = Overridden ms c xs
 
--- | Type family used to determine which override from 'xs'
--- to replace 'x' with, if any. The 'ms' holds the field name
--- for 'x', if applicable.
+-- | Auxiliary type class to actually put Overridden in the correct place.
+--
+-- It has to be a MultiParamTypeClass instead of using the above type family, because
+-- otherwise GHC can't solve the bare @c@ case.
+--
+-- Ideally we would like to use @Coercible c (OverrideField ms c xs)@ instead of
+-- this class, but then users would have to import Overridden constructor, in order for GHC
+-- to solve Coercible constraint.
+class DoOverrideField c a where
+  overrideFieldTo :: c -> a
+  overrideFieldFrom :: a -> c
+
+instance {-# OVERLAPPING #-} DoOverrideField (Maybe c) (Maybe (Overridden ms c xs)) where
+  overrideFieldTo = coerce
+  overrideFieldFrom = coerce
+
+instance {-# OVERLAPPING #-} DoOverrideField c (Overridden ms c xs) where
+  overrideFieldTo = coerce
+  overrideFieldFrom = coerce
+
+instance DoOverrideField c (OverrideField ms c xs) => GOverride xs (M1 S ('MetaSel ms su ss ds) (K1 R c)) where
+  type OverrideRep xs (M1 S ('MetaSel ms su ss ds) (K1 R c)) =
+    M1 S ('MetaSel ms su ss ds) (K1 R (OverrideField ms c xs))
+  overrideFrom (M1 (K1 x)) = M1 (K1 (overrideFieldTo x))
+  overrideTo (M1 (K1 x)) = M1 (K1 (overrideFieldFrom x))
+
+-- | Type family used to determine which override from @xs@
+-- to replace @x@ with, if any. The @ms@ holds the field name
+-- for @x@, if applicable.
 type family Using (ms :: Maybe Symbol) (x :: *) (xs :: [*]) where
   -- No matching override found.
   Using ms x '[] = x
