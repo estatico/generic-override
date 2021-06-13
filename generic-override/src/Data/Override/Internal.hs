@@ -87,6 +87,13 @@ instance (GOverride xs f, GOverride xs g) => GOverride xs (f :*: g) where
   overrideFrom (f :*: g) = overrideFrom @xs f :*: overrideFrom @xs g
   overrideTo (f :*: g) = overrideTo @xs f :*: overrideTo @xs g
 
+instance (GOverride xs f, GOverride xs g) => GOverride xs (f :+: g) where
+  type OverrideRep xs (f :+: g) = OverrideRep xs f :+: OverrideRep xs g
+  overrideFrom (L1 l) = L1 (overrideFrom @xs l)
+  overrideFrom (R1 r) = R1 (overrideFrom @xs r)
+  overrideTo (L1 l) = L1 (overrideTo @xs l)
+  overrideTo (R1 r) = R1 (overrideTo @xs r)
+
 -- | Auxiliary family to put Overridden under Maybe.
 --
 -- This is required to preserve aeson's omitNothingFields behavior
