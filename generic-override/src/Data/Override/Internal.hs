@@ -72,6 +72,11 @@ class GOverride (xs :: [*]) (f :: * -> *) where
   overrideFrom :: f x -> OverrideRep xs f x
   overrideTo :: OverrideRep xs f x -> f x
 
+instance GOverride xs U1 where
+  type OverrideRep xs U1 = U1
+  overrideFrom U1 = U1
+  overrideTo U1 = U1
+
 instance (GOverride xs f) => GOverride xs (M1 D c f) where
   type OverrideRep xs (M1 D c f) = M1 D c (OverrideRep xs f)
   overrideFrom (M1 x) = M1 (overrideFrom @xs x)
