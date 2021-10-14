@@ -1,6 +1,7 @@
 # generic-override
 
 [![Build](https://img.shields.io/travis/estatico/generic-override.svg?logo=travis)](http://travis-ci.org/estatico/generic-override)
+[![Build status](https://github.com/estatico/generic-override/actions/workflows/Cabal.yml/badge.svg)](https://github.com/estatico/generic-override/actions/workflows/Cabal.yml)
 
 | Library                | Version |
 | ---------------------- | ------- |
