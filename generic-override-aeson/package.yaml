@@ -16,7 +16,7 @@ extra-source-files:
 
 dependencies:
 - base >= 4.7 && < 5
-- aeson >= 1.4 && < 1.6
+- aeson >= 1.4 && < 3
 - generic-override
 
 library:
