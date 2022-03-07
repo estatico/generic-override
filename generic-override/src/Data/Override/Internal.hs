@@ -10,6 +10,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE PolyKinds #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -19,8 +20,6 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Data.Override.Internal where
 
-import Data.Type.Bool (If)
-import Data.Type.Equality (type (==))
 import GHC.Generics
 import GHC.TypeLits (Symbol)
 
@@ -86,29 +85,54 @@ instance (GOverride xs f, GOverride xs g) => GOverride xs (f :*: g) where
   overrideFrom (f :*: g) = overrideFrom @xs f :*: overrideFrom @xs g
   overrideTo (f :*: g) = overrideTo @xs f :*: overrideTo @xs g
 
+instance (GOverride xs f, GOverride xs g) => GOverride xs (f :+: g) where
+  type OverrideRep xs (f :+: g) = OverrideRep xs f :+: OverrideRep xs g
+
+  overrideFrom = \case
+    L1 f -> L1 $ overrideFrom @xs f
+    R1 g -> R1 $ overrideFrom @xs g
+
+  overrideTo = \case
+    L1 f -> L1 $ overrideTo @xs f
+    R1 g -> R1 $ overrideTo @xs g
+
 instance GOverride xs (M1 S ('MetaSel ms su ss ds) (K1 R c)) where
   type OverrideRep xs (M1 S ('MetaSel ms su ss ds) (K1 R c)) =
     M1 S ('MetaSel ms su ss ds) (K1 R (Overridden ms c xs))
   overrideFrom (M1 (K1 x)) = M1 (K1 (Overridden @ms x))
   overrideTo (M1 (K1 (Overridden x))) = M1 (K1 x)
 
+instance GOverride xs U1 where
+  type OverrideRep xs U1 = U1
+  overrideFrom U1 = U1
+  overrideTo U1 = U1
+
 -- | Type family used to determine which override from 'xs'
 -- to replace 'x' with, if any. The 'ms' holds the field name
 -- for 'x', if applicable.
-type family Using (ms :: Maybe Symbol) (x :: *) (xs :: [*]) where
+type family Using (ms :: Maybe Symbol) (a :: *) (xs :: [*]) where
   -- No matching override found.
-  Using ms x '[] = x
+  Using ms a '[] = a
 
   -- Override the matching field.
-  Using ms x (As (o :: Symbol) n ': xs) =
-    If (ms == 'Just o) n (Using ms x xs)
-
-  Using ms x (With (o :: Symbol) w ': xs) =
-    If (ms == 'Just o) (w x) (Using ms x xs)
+  Using ('Just o) a (As o n ': xs) = n
+  Using ('Just o) a (With o w ': xs) = w a
 
   -- Override the matching type.
-  Using ms x (As (o :: *) n ': xs) =
-    If (x == o) n (Using ms x xs)
+  Using ms a (As a n ': xs) = n
+  Using ms a (With a w ': xs) = w a
 
-  Using ms x (With (o :: *) w ': xs) =
-    If (x == o) (w x) (Using ms x xs)
+  -- Override the matching kind (up to 10).
+  Using ms (f a0) (As f g ': xs) = g a0
+  Using ms (f a0 a1) (As f g ': xs) = g a0 a1
+  Using ms (f a0 a1 a2) (As f g ': xs) = g a0 a1 a2
+  Using ms (f a0 a1 a2 a3) (As f g ': xs) = g a0 a1 a2 a3
+  Using ms (f a0 a1 a2 a3 a4) (As f g ': xs) = g a0 a1 a2 a3 a4
+  Using ms (f a0 a1 a2 a3 a4 a5) (As f g ': xs) = g a0 a1 a2 a3 a4 a5
+  Using ms (f a0 a1 a2 a3 a4 a5 a6) (As f g ': xs) = g a0 a1 a2 a3 a4 a5 a6
+  Using ms (f a0 a1 a2 a3 a4 a5 a6 a7) (As f g ': xs) = g a0 a1 a2 a3 a4 a5 a6 a7
+  Using ms (f a0 a1 a2 a3 a4 a5 a6 a7 a8) (As f g ': xs) = g a0 a1 a2 a3 a4 a5 a6 a7 a8
+  Using ms (f a0 a1 a2 a3 a4 a5 a6 a7 a8 a9) (As f g ': xs) = g a0 a1 a2 a3 a4 a5 a6 a7 a8 a9
+
+  -- No match on this override, recurse.
+  Using ms a (x ': xs) = Using ms a xs
