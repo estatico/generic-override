@@ -1,5 +1,10 @@
 # Changelog for generic-override
 
+## 0.3.0.0
+
+* 'Override' support for sum types
+* 'As' support for higher kinds up (up to arity 10)
+
 ## 0.2.0.0
 
 * Instances for Eq, Ord, Semigroup, Monoid

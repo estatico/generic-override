@@ -7,7 +7,7 @@ cabal-version: 1.12
 -- hash: 826716a7af5af9e3b3ed5bc07a6a669bc1e91c109f50eff9799be1d50aaa881a
 
 name:           generic-override
-version:        0.2.0.1
+version:        0.3.0.0
 synopsis:       Provides functionality for overriding instances for generic derivation
 description:    Please see the README on GitHub at <https://github.com/estatico/generic-override#readme>
 category:       Generics
