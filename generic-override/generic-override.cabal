@@ -1,8 +1,10 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
+-- This file has been generated from package.yaml by hpack version 0.33.0.
 --
 -- see: https://github.com/sol/hpack
+--
+-- hash: 826716a7af5af9e3b3ed5bc07a6a669bc1e91c109f50eff9799be1d50aaa881a
 
 name:           generic-override
 version:        0.2.0.1
@@ -42,6 +44,7 @@ test-suite generic-override-test
   type: exitcode-stdio-1.0
   main-is: Test.hs
   other-modules:
+      Encode
       Paths_generic_override
   hs-source-dirs:
       test
