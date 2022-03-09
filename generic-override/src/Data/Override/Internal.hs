@@ -24,8 +24,8 @@ import GHC.Generics
 import GHC.TypeLits (Symbol)
 
 -- | The feature of this library. For use with DerivingVia.
--- Apply it to a type 'a' and supply a type-level list of instance
--- overrides 'xs'.
+-- Apply it to a type @a@ and supply a type-level list of instance
+-- overrides @xs@.
 newtype Override a (xs :: [*]) = Override a
 
 -- | Unwrap an 'Override' value.
@@ -37,7 +37,7 @@ override :: a -> proxy xs -> Override a xs
 override a _ = Override a
 
 -- | Used to construct a type-level override. Usually used infix.
--- The 'o' should be either a type (kind '*') or a type-level string
+-- The @o@ should be either a type (kind '*') or a type-level string
 -- (kind 'Symbol').
 data As (o :: k) n
 
@@ -107,9 +107,9 @@ instance GOverride xs U1 where
   overrideFrom U1 = U1
   overrideTo U1 = U1
 
--- | Type family used to determine which override from 'xs'
--- to replace 'x' with, if any. The 'ms' holds the field name
--- for 'x', if applicable.
+-- | Type family used to determine which override from @xs@
+-- to replace @a@ with, if any. The @ms@ holds the field name
+-- for @a@, if applicable.
 type family Using (ms :: Maybe Symbol) (a :: *) (xs :: [*]) where
   -- No matching override found.
   Using ms a '[] = a
