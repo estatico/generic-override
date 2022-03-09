@@ -29,6 +29,8 @@ main = hspec do
       it "Sum1" testSum1'Encode
       it "Sum2" testSum2'Encode
       it "Sum3" testSum3'Encode
+      it "Sum4" testSum4'Encode
+      it "Sum5" testSum5'Encode
 
 -- | Overriding instances by type.
 data Rec1 = Rec1
@@ -117,3 +119,31 @@ testSum3'Encode :: IO ()
 testSum3'Encode = do
   encode (Sum3List [1, 2, 3 :: Int]) `shouldBe` "Sum3List:1,2,3"
   encode (Sum3Null @Int) `shouldBe` "Sum3Null:"
+
+-- | Override using 'At' which includes a type variable.
+data Sum4 a = Sum4List [a] | Sum4String String
+  deriving stock (Show, Eq, Generic)
+  deriving (Encode)
+    via Override (Sum4 a)
+      '[ At "Sum4List" 0 (ListOf a)
+       ]
+
+testSum4'Encode :: IO ()
+testSum4'Encode = do
+  encode (Sum4List [1, 2, 3 :: Int]) `shouldBe` "Sum4List:1,2,3"
+  encode (Sum4List "foo") `shouldBe` "Sum4List:f,o,o"
+  encode (Sum4String @Char "foo") `shouldBe` "Sum4String:foo"
+
+-- | Override using 'At' which uses a kind of @* -> *@.
+data Sum5 a = Sum5String String | Sum5List Char [a]
+  deriving stock (Show, Eq, Generic)
+  deriving (Encode)
+    via Override (Sum5 a)
+      '[ At "Sum5List" 1 (ListOf a)
+       ]
+
+testSum5'Encode :: IO ()
+testSum5'Encode = do
+  encode (Sum5List 'a' [1, 2, 3 :: Int]) `shouldBe` "Sum5List:a,1,2,3"
+  encode (Sum5List 'a' "foo") `shouldBe` "Sum5List:a,f,o,o"
+  encode (Sum5String @Char "foo") `shouldBe` "Sum5String:foo"

@@ -26,12 +26,12 @@ instance
   ) => Aeson.ToJSON (Override a xs)
 
 instance
-  ( Coercible a (Using ms a xs)
-  , Aeson.ToJSON (Using ms a xs)
-  ) => Aeson.ToJSON (Overridden ms a xs)
+  ( Coercible a (Using i a xs)
+  , Aeson.ToJSON (Using i a xs)
+  ) => Aeson.ToJSON (Overridden i a xs)
   where
-  toJSON = Aeson.toJSON @(Using ms a xs) . coerce
-  toEncoding = Aeson.toEncoding @(Using ms a xs) . coerce
+  toJSON = Aeson.toJSON @(Using i a xs) . coerce
+  toEncoding = Aeson.toEncoding @(Using i a xs) . coerce
 
 instance
   ( Generic (Override a xs)
@@ -39,8 +39,8 @@ instance
   ) => Aeson.FromJSON (Override a xs)
 
 instance
-  ( Coercible a (Using ms a xs)
-  , Aeson.FromJSON (Using ms a xs)
-  ) => Aeson.FromJSON (Overridden ms a xs)
+  ( Coercible a (Using i a xs)
+  , Aeson.FromJSON (Using i a xs)
+  ) => Aeson.FromJSON (Overridden i a xs)
   where
-  parseJSON = coerce . Aeson.parseJSON @(Using ms a xs)
+  parseJSON = coerce . Aeson.parseJSON @(Using i a xs)
