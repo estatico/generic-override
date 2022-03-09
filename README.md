@@ -71,5 +71,6 @@ Let's serialize an example `MyRec` to JSON -
 {"foo":12,"bar":["h","i"],"baz":"BYE"}
 ```
 
-For more examples, see the test suite in
-[generic-override-aeson](https://github.com/estatico/generic-override/blob/master/generic-override-aeson/test/Test.hs).
+For more examples, see the test suites in -
+* [generic-override](https://github.com/estatico/generic-override/blob/master/generic-override/test/Test.hs).
+* [generic-override-aeson](https://github.com/estatico/generic-override/blob/master/generic-override-aeson/test/Test.hs).
