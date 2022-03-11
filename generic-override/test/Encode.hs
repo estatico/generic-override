@@ -26,14 +26,6 @@ instance
   , GEncode (Rep (Override a xs))
   ) => Encode (Override a xs)
 
-instance
-  ( u ~ Using ms a xs
-  , Coercible a u
-  , Encode u
-  ) => Encode (Overridden ms a xs)
-  where
-  encode = encode @u . coerce
-
 class GEncode f where
   gencode :: f a -> String
 

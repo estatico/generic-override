@@ -29,13 +29,6 @@ instance
   where
   (==) = (==) `on` from'
 
-instance
-  ( Coercible a (Using ms a xs)
-  , Eq (Using ms a xs)
-  ) => Eq (Overridden ms a xs)
-  where
-  x == y = (==) @(Using ms a xs) (coerce x) (coerce y)
-
 -- Ord
 
 instance
@@ -44,14 +37,6 @@ instance
   ) => Ord (Override a xs)
   where
   compare = compare `on` from'
-
-instance
-  ( Coercible a (Using ms a xs)
-  , Ord (Using ms a xs)
-  ) => Ord (Overridden ms a xs)
-  where
-  compare x y = compare @(Using ms a xs) (coerce x) (coerce y)
-
 
 -- Semigroup
 
@@ -62,13 +47,6 @@ instance
   where
   x <> y = to (from' x <> from' y)
 
-instance
-  ( Coercible a (Using ms a xs)
-  , Semigroup (Using ms a xs)
-  ) => Semigroup (Overridden ms a xs)
-  where
-  x <> y = coerce $ (<>) @(Using ms a xs) (coerce x) (coerce y)
-
 -- Monoid
 
 instance
@@ -78,11 +56,3 @@ instance
   where
   mempty = to' mempty
   x `mappend` y = to (from' x `mappend` from' y)
-
-instance
-  ( Coercible a (Using ms a xs)
-  , Monoid (Using ms a xs)
-  ) => Monoid (Overridden ms a xs)
-  where
-  mempty = coerce $ mempty @(Using ms a xs)
-  x `mappend` y = coerce $ mappend @(Using ms a xs) (coerce x) (coerce y)

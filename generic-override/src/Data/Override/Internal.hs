@@ -23,6 +23,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Data.Override.Internal where
 
+import Data.Coerce
 import GHC.Generics
 import GHC.TypeLits
 
@@ -51,18 +52,19 @@ data With (o :: k) (w :: * -> *)
 -- name @c@ and parameter index @n@.
 data At (c :: Symbol) (p :: Nat) n
 
+-- TODO: REMOVE ME
 -- | Used at the leaf nodes of a generic 'Rep'
-newtype Overridden (i :: Inspect) a (xs :: [*]) = Overridden a
-
+-- newtype Overridden (i :: Inspect) a (xs :: [*]) = Overridden a
+--
 -- | Unwrap an 'Overridden' value.
-unOverridden :: Overridden ms a xs -> a
-unOverridden (Overridden a) = a
-
+-- unOverridden :: Overridden ms a xs -> a
+-- unOverridden (Overridden a) = a
+--
 -- | Same as 'override' but for 'Overridden' types.
-overridden
-  :: forall a (i :: Inspect) (xs :: [*]) proxy0 proxy1.
-     a -> proxy0 i -> proxy1 xs -> Overridden i a xs
-overridden a _ _ = Overridden a
+-- overridden
+--   :: forall a (i :: Inspect) (xs :: [*]) proxy0 proxy1.
+--      a -> proxy0 i -> proxy1 xs -> Overridden i a xs
+-- overridden a _ _ = Overridden a
 
 instance
   ( Generic a
@@ -159,21 +161,27 @@ instance
   overrideFrom (M1 x) = M1 (overrideFrom @('Inspect mc selName mp) @xs x)
   overrideTo (M1 x) = M1 (overrideTo @('Inspect mc selName mp) @xs x)
 
-instance GOverride' ('Inspect mc ms 'Nothing) xs (K1 R a) where
+instance
+  ( Coercible a (Using ('Inspect mc ms ('Just 0)) a xs)
+  ) => GOverride' ('Inspect mc ms 'Nothing) xs (K1 R a)
+  where
   type OverrideRep ('Inspect mc ms 'Nothing) xs (K1 R a) =
-    K1 R (Overridden ('Inspect mc ms ('Just 0)) a xs)
+    K1 R (Using ('Inspect mc ms ('Just 0)) a xs)
 
-  overrideFrom (K1 a) = K1 (Overridden @('Inspect mc ms ('Just 0)) @a @xs a)
+  overrideFrom (K1 a) = K1 (coerce a :: Using ('Inspect mc ms ('Just 0)) a xs)
 
-  overrideTo (K1 (Overridden a)) = K1 a
+  overrideTo (K1 u) = K1 (coerce u :: a)
 
-instance GOverride' ('Inspect mc ms ('Just p)) xs (K1 R a) where
+instance
+  ( Coercible a (Using ('Inspect mc ms ('Just p)) a xs)
+  ) => GOverride' ('Inspect mc ms ('Just p)) xs (K1 R a)
+  where
   type OverrideRep ('Inspect mc ms ('Just p)) xs (K1 R a) =
-    K1 R (Overridden ('Inspect mc ms ('Just p)) a xs)
+    K1 R (Using ('Inspect mc ms ('Just p)) a xs)
 
-  overrideFrom (K1 a) = K1 (Overridden @('Inspect mc ms ('Just p)) @a @xs a)
+  overrideFrom (K1 a) = K1 (coerce a :: Using ('Inspect mc ms ('Just p)) a xs)
 
-  overrideTo (K1 (Overridden a)) = K1 a
+  overrideTo (K1 u) = K1 (coerce u :: a)
 
 instance GOverride' i xs U1 where
   type OverrideRep i xs U1 = U1

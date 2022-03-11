@@ -15,7 +15,7 @@
 module Data.Override.Aeson where
 
 import Data.Coerce (Coercible, coerce)
-import Data.Override.Internal (Override, Overridden(Overridden), Using)
+import Data.Override.Internal (Override, Using)
 import GHC.Generics (Generic, Rep)
 import qualified Data.Aeson as Aeson
 
@@ -26,21 +26,6 @@ instance
   ) => Aeson.ToJSON (Override a xs)
 
 instance
-  ( Coercible a (Using i a xs)
-  , Aeson.ToJSON (Using i a xs)
-  ) => Aeson.ToJSON (Overridden i a xs)
-  where
-  toJSON = Aeson.toJSON @(Using i a xs) . coerce
-  toEncoding = Aeson.toEncoding @(Using i a xs) . coerce
-
-instance
   ( Generic (Override a xs)
   , Aeson.GFromJSON Aeson.Zero (Rep (Override a xs))
   ) => Aeson.FromJSON (Override a xs)
-
-instance
-  ( Coercible a (Using i a xs)
-  , Aeson.FromJSON (Using i a xs)
-  ) => Aeson.FromJSON (Overridden i a xs)
-  where
-  parseJSON = coerce . Aeson.parseJSON @(Using i a xs)
