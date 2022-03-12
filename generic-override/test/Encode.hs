@@ -10,9 +10,8 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Encode where
 
-import Data.Coerce
-import Data.List
-import Data.Override.Internal
+import Data.List (intercalate)
+import Data.Override.Internal (GOverride, Override)
 import GHC.Generics
 
 class Encode a where

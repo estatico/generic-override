@@ -1,22 +1,16 @@
--- | This module contains only orphan instances. It is only needed to
--- be imported where you are overriding instances for aeson generic derivation.
-
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Data.Override.Aeson where
+module Data.Override.Aeson
+  ( WithAesonOptions(..)
+  , AesonOption(..)
+  ) where
 
-import Data.Coerce (Coercible, coerce)
-import Data.Override.Internal (Override, Using)
+import Data.Override (Override(..))
+import Data.Override.Aeson.Options.Internal (AesonOption(..), WithAesonOptions(..))
 import GHC.Generics (Generic, Rep)
+
 import qualified Data.Aeson as Aeson
 
 instance

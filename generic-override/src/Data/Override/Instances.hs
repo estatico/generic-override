@@ -7,7 +7,6 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Data.Override.Instances () where
 
-import Data.Coerce (Coercible, coerce)
 import Data.Function (on)
 import GHC.Generics (Generic(Rep, from, to))
 

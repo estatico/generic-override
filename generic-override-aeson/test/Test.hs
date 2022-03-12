@@ -17,7 +17,7 @@ import Data.Aeson (FromJSON(parseJSON), Result(Success), ToJSON(toJSON), Value, 
 import Data.Aeson.QQ.Simple (aesonQQ)
 import Data.List (reverse)
 import Data.Override (Override(Override), As, At, With)
-import Data.Override.Aeson ()
+import Data.Override.Aeson (AesonOption(..), WithAesonOptions(..))
 import Data.Text (Text)
 import GHC.Generics (Generic)
 import LispCaseAeson (LispCase(LispCase))
@@ -36,6 +36,7 @@ main = hspec do
     it "Rec6" testRec6
     it "Rec7" testRec6
     it "Sum1" testSum1
+    it "Options1" testOptions1
 
 newtype Uptext = Uptext { unUptext :: Text }
 
@@ -46,7 +47,6 @@ newtype Shown a = Shown { unShown :: a }
 
 instance (Show a) => ToJSON (Shown a) where
   toJSON = toJSON . show . unShown
-
 instance (Read a) => FromJSON (Shown a) where
   parseJSON v = do
     s <- parseJSON v
@@ -278,6 +278,23 @@ testSum1 = do
       "tag": "Sum1Null"
     }
   |]
+
+
+data Options1 = Options1
+  { foo :: Maybe Int
+  , bar :: String
+  } deriving (Eq, Show, Generic)
+    deriving (FromJSON, ToJSON)
+      via Override Options1
+            '[ "foo" `As` Maybe (Shown Int) ]
+            `WithAesonOptions` '[ 'OmitNothingFields ]
+
+testOptions1 :: IO ()
+testOptions1 = do
+  Options1 { foo = Nothing, bar = "boo" }
+    `shouldRoundtripAs` [aesonQQ| { "bar": "boo" } |]
+  Options1 { foo = Just 1, bar = "boo" }
+    `shouldRoundtripAs` [aesonQQ| { "foo": "1", "bar": "boo" } |]
 
 shouldRoundtripAs
   :: (ToJSON a, FromJSON a, Eq a, Show a, HasCallStack)
