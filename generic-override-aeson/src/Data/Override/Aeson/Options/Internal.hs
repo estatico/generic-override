@@ -1,3 +1,6 @@
+-- | This is the internal generic-override-aeson API and should be considered
+-- unstable and subject to change. In general, you should prefer to use the
+-- public, stable API provided by "Data.Override.Aeson".
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -16,6 +19,8 @@ import GHC.TypeLits (KnownSymbol, Symbol, symbolVal)
 
 import qualified Data.Aeson as Aeson
 
+-- | Use with @DerivingVia@ to override Aeson @Options@ with a type-level
+-- list of 'AesonOption'.
 newtype WithAesonOptions (a :: *) (options :: [AesonOption]) = WithAesonOptions a
 
 instance
@@ -36,16 +41,18 @@ instance
   where
   parseJSON = coerce $ genericParseJSON @a $ applyAesonOptions (Proxy @options) defaultOptions
 
+-- | Provides a type-level subset of fields from 'Options'
 data AesonOption =
-    AllNullaryToStringTag Bool
-  | OmitNothingFields
-  | SumEncodingTaggedObject Symbol Symbol
-  | SumEncodingUntaggedValue
-  | SumEncodingObjectWithSingleField
-  | SumEncodingTwoElemArray
-  | UnwrapUnaryRecords
-  | TagSingleConstructors
+    AllNullaryToStringTag Bool -- ^ Equivalient to @'allNullaryToStringTag' = b@
+  | OmitNothingFields -- ^ Equivalient to @'omitNothingFields' = True@
+  | SumEncodingTaggedObject Symbol Symbol -- ^ Equivalient to @'sumEncoding' = 'TaggedObject' k v@
+  | SumEncodingUntaggedValue -- ^ Equivalient to @'sumEncoding' = 'UntaggedValue'@
+  | SumEncodingObjectWithSingleField -- ^ Equivalient to @'sumEncoding' = 'ObjectWithSingleField'@
+  | SumEncodingTwoElemArray -- ^ Equivalient to @'sumEncoding' = 'TwoElemArray'@
+  | UnwrapUnaryRecords -- ^ Equivalient to @'unwrapUnaryRecords' = True@
+  | TagSingleConstructors -- ^ Equivalient to @'tagSingleConstructors' = True@
 
+-- | Updates 'Options' given a type-level list of 'AesonOption'.
 class ApplyAesonOptions (options :: [AesonOption]) where
   applyAesonOptions :: Proxy options -> Options -> Options
 
@@ -60,6 +67,7 @@ instance
   applyAesonOptions _ =
     applyAesonOption (Proxy @option) . (applyAesonOptions (Proxy @options))
 
+-- | Updates 'Options' given a single type-level 'AesonOption'.
 class ApplyAesonOption (option :: AesonOption) where
   applyAesonOption :: Proxy option -> Options -> Options
 

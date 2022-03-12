@@ -8,9 +8,8 @@
 module Data.Override.Instances () where
 
 import Data.Function (on)
+import Data.Override.Internal (Override)
 import GHC.Generics (Generic(Rep, from, to))
-
-import Data.Override.Internal
 
 -- The @foo `on` from'@ idiom is taken from @generic-data@ by Li-yao Xia.
 from' :: Generic a => a -> Rep a ()

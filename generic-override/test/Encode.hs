@@ -1,8 +1,10 @@
 {-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE TypeOperators #-}
@@ -11,7 +13,7 @@
 module Encode where
 
 import Data.List (intercalate)
-import Data.Override.Internal (GOverride, Override)
+import Data.Override (Override)
 import GHC.Generics
 
 class Encode a where
@@ -20,8 +22,7 @@ class Encode a where
   encode = gencode . from
 
 instance
-  ( Generic a
-  , GOverride xs (Rep a)
+  ( Generic (Override a xs)
   , GEncode (Rep (Override a xs))
   ) => Encode (Override a xs)
 
@@ -61,11 +62,12 @@ instance Encode Int where
 instance Encode Char where
   encode = pure
 
+-- | Create an overlapping instance to verify that overriding with
+-- 'ListOf' avoids this instance.
 instance {-# OVERLAPPING #-} Encode String where
   encode = id
 
-instance (Encode a) => Encode [a] where
-  encode = intercalate "," . map encode
+deriving via (ListOf a) instance (Encode a) => Encode [a]
 
 newtype ListOf a = ListOf { unListOf :: [a] }
 

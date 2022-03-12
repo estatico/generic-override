@@ -7,9 +7,9 @@
 {-# LANGUAGE TypeOperators #-}
 module Main where
 
-import Data.Monoid
-import Data.Override
-import Encode
+import Data.Monoid (Any(..))
+import Data.Override (Override(..), As, At)
+import Encode (Encode(encode), ListOf(..))
 import GHC.Generics (Generic)
 import Test.Hspec
 

@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
@@ -15,7 +16,6 @@ module Main where
 
 import Data.Aeson (FromJSON(parseJSON), Result(Success), ToJSON(toJSON), Value, fromJSON)
 import Data.Aeson.QQ.Simple (aesonQQ)
-import Data.List (reverse)
 import Data.Override (Override(Override), As, At, With)
 import Data.Override.Aeson (AesonOption(..), WithAesonOptions(..))
 import Data.Text (Text)
@@ -23,6 +23,7 @@ import GHC.Generics (Generic)
 import LispCaseAeson (LispCase(LispCase))
 import Test.Hspec
 import Text.Read (readMaybe)
+
 import qualified Data.Text as Text
 
 main :: IO ()
@@ -252,7 +253,7 @@ data Sum1 a =
     Sum1List [a]
   | Sum1Trip a Char Bool
   | Sum1Null
-  deriving (Show, Eq, Generic)
+  deriving stock (Show, Eq, Generic)
   deriving (ToJSON, FromJSON)
     via Override (Sum1 a)
           '[ At "Sum1List" 0 (Reverse a)
@@ -280,21 +281,33 @@ testSum1 = do
   |]
 
 
-data Options1 = Options1
-  { foo :: Maybe Int
-  , bar :: String
-  } deriving (Eq, Show, Generic)
+data Options1 =
+    Options1A { foo :: Maybe Int, bar :: String }
+  | Options1B Options1BBody
+  | Options1C
+    deriving stock (Eq, Show, Generic)
     deriving (FromJSON, ToJSON)
       via Override Options1
-            '[ "foo" `As` Maybe (Shown Int) ]
-            `WithAesonOptions` '[ 'OmitNothingFields ]
+            '[ "foo" `As` Maybe (Shown Int)
+             ] `WithAesonOptions`
+            '[ 'OmitNothingFields
+             , 'SumEncodingTaggedObject "type" "data"
+             ]
+
+data Options1BBody = Options1BBody { baz :: Int }
+  deriving stock (Eq, Show, Generic)
+  deriving anyclass (FromJSON, ToJSON)
 
 testOptions1 :: IO ()
 testOptions1 = do
-  Options1 { foo = Nothing, bar = "boo" }
-    `shouldRoundtripAs` [aesonQQ| { "bar": "boo" } |]
-  Options1 { foo = Just 1, bar = "boo" }
-    `shouldRoundtripAs` [aesonQQ| { "foo": "1", "bar": "boo" } |]
+  Options1A { foo = Nothing, bar = "boo" }
+    `shouldRoundtripAs` [aesonQQ| { "type": "Options1A", "bar": "boo" } |]
+  Options1A { foo = Just 1, bar = "boo" }
+    `shouldRoundtripAs` [aesonQQ| { "type": "Options1A", "foo": "1", "bar": "boo" } |]
+  Options1B Options1BBody { baz = 2 }
+    `shouldRoundtripAs` [aesonQQ| { "type": "Options1B", "data": { "baz": 2 } } |]
+  Options1C
+    `shouldRoundtripAs` [aesonQQ| { "type": "Options1C" } |]
 
 shouldRoundtripAs
   :: (ToJSON a, FromJSON a, Eq a, Show a, HasCallStack)

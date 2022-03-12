@@ -1,8 +1,6 @@
 -- | This is the internal generic-override API and should be considered
--- unstable and subject to change. This module is exposed for library integrators
--- (e.g. generic-override-aeson). In general, unless you are integrating
--- some type class with generic-override, you should prefer to use the
--- public, stable API provided by 'Data.Override'.
+-- unstable and subject to change. In general, you should prefer to use the
+-- public, stable API provided by "Data.Override".
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE ConstraintKinds #-}
 {-# LANGUAGE DataKinds #-}
@@ -23,9 +21,9 @@
 {-# LANGUAGE UndecidableInstances #-}
 module Data.Override.Internal where
 
-import Data.Coerce
+import Data.Coerce (Coercible, coerce)
 import GHC.Generics
-import GHC.TypeLits
+import GHC.TypeLits (type (+), Nat, Symbol)
 
 -- | The feature of this library. For use with DerivingVia.
 -- Apply it to a type @a@ and supply a type-level list of instance
@@ -49,22 +47,8 @@ data As (o :: k) n
 data With (o :: k) (w :: * -> *)
 
 -- | Used to construct a type-level override for the given constructor
--- name @c@ and parameter index @n@.
-data At (c :: Symbol) (p :: Nat) n
-
--- TODO: REMOVE ME
--- | Used at the leaf nodes of a generic 'Rep'
--- newtype Overridden (i :: Inspect) a (xs :: [*]) = Overridden a
---
--- | Unwrap an 'Overridden' value.
--- unOverridden :: Overridden ms a xs -> a
--- unOverridden (Overridden a) = a
---
--- | Same as 'override' but for 'Overridden' types.
--- overridden
---   :: forall a (i :: Inspect) (xs :: [*]) proxy0 proxy1.
---      a -> proxy0 i -> proxy1 xs -> Overridden i a xs
--- overridden a _ _ = Overridden a
+-- name @c@ and parameter index @p@.
+data At (c :: Symbol) (p :: Nat) (n :: *)
 
 instance
   ( Generic a
@@ -75,9 +59,18 @@ instance
   from = overrideFrom @EmptyInspect @xs . from . unOverride
   to = Override . to . overrideTo @EmptyInspect @xs
 
+-- | Shorthand for the starting point of 'GOverride''.
+--
+-- You generally shouldn't need this. If GHC asks you to add it as
+-- a constraint, prefer using the instance @Generic (Override a xs)@ instead,
+-- which may require @MonoLocalBinds@.
 type GOverride = GOverride' EmptyInspect
 
 -- | Type class used to build the 'Generic' instance for 'Override'.
+--
+-- You generally shouldn't need this. If GHC asks you to add it as
+-- a constraint, prefer using the instance @Generic (Override a xs)@ instead,
+-- which may require @MonoLocalBinds@.
 class GOverride' (i :: Inspect) (xs :: [*]) (f :: * -> *) where
   type OverrideRep i xs f :: * -> *
   overrideFrom :: f x -> OverrideRep i xs f x
@@ -210,7 +203,7 @@ type family Using (i :: Inspect) (a :: *) (xs :: [*]) where
   -- Override the matching type.
   Using i a (With a w ': xs) = w a
 
-  -- Override the matching type (type arity 0-10).
+  -- Override the matching type (arity 0-10).
   Using i a (As a n ': xs) = n
   Using i (f a0) (As f g ': xs) = g a0
   Using i (f a0 a1) (As f g ': xs) = g a0 a1

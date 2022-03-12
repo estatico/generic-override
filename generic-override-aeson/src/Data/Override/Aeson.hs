@@ -1,3 +1,6 @@
+-- | The public, stable @generic-override-aeson@ API.
+-- Provides orphan instances for 'Override' as well as customization
+-- for aeson's 'Options' when using @DerivingVia@.
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE UndecidableInstances #-}
@@ -7,19 +10,18 @@ module Data.Override.Aeson
   , AesonOption(..)
   ) where
 
+import Data.Aeson
 import Data.Override (Override(..))
 import Data.Override.Aeson.Options.Internal (AesonOption(..), WithAesonOptions(..))
 import GHC.Generics (Generic, Rep)
 
-import qualified Data.Aeson as Aeson
+instance
+  ( Generic (Override a xs)
+  , GToJSON Zero (Rep (Override a xs))
+  , GToEncoding Zero (Rep (Override a xs))
+  ) => ToJSON (Override a xs)
 
 instance
   ( Generic (Override a xs)
-  , Aeson.GToJSON Aeson.Zero (Rep (Override a xs))
-  , Aeson.GToEncoding Aeson.Zero (Rep (Override a xs))
-  ) => Aeson.ToJSON (Override a xs)
-
-instance
-  ( Generic (Override a xs)
-  , Aeson.GFromJSON Aeson.Zero (Rep (Override a xs))
-  ) => Aeson.FromJSON (Override a xs)
+  , GFromJSON Zero (Rep (Override a xs))
+  ) => FromJSON (Override a xs)
