@@ -1,46 +1,27 @@
--- | This module contains only orphan instances. It is only needed to
--- be imported where you are overriding instances for aeson generic derivation.
-
-{-# LANGUAGE AllowAmbiguousTypes #-}
-{-# LANGUAGE DataKinds #-}
+-- | The public, stable @generic-override-aeson@ API.
+-- Provides orphan instances for 'Override' as well as customization
+-- for aeson's 'Options' when using @DerivingVia@.
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE RankNTypes #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeApplications #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE MonoLocalBinds #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
-module Data.Override.Aeson where
+module Data.Override.Aeson
+  ( WithAesonOptions(..)
+  , AesonOption(..)
+  ) where
 
-import Data.Coerce (Coercible, coerce)
-import Data.Override.Internal (Override, Overridden(Overridden), Using)
+import Data.Aeson
+import Data.Override (Override(..))
+import Data.Override.Aeson.Options.Internal (AesonOption(..), WithAesonOptions(..))
 import GHC.Generics (Generic, Rep)
-import qualified Data.Aeson as Aeson
 
 instance
   ( Generic (Override a xs)
-  , Aeson.GToJSON Aeson.Zero (Rep (Override a xs))
-  , Aeson.GToEncoding Aeson.Zero (Rep (Override a xs))
-  ) => Aeson.ToJSON (Override a xs)
-
-instance
-  ( Coercible a (Using ms a xs)
-  , Aeson.ToJSON (Using ms a xs)
-  ) => Aeson.ToJSON (Overridden ms a xs)
-  where
-  toJSON = Aeson.toJSON @(Using ms a xs) . coerce
-  toEncoding = Aeson.toEncoding @(Using ms a xs) . coerce
+  , GToJSON Zero (Rep (Override a xs))
+  , GToEncoding Zero (Rep (Override a xs))
+  ) => ToJSON (Override a xs)
 
 instance
   ( Generic (Override a xs)
-  , Aeson.GFromJSON Aeson.Zero (Rep (Override a xs))
-  ) => Aeson.FromJSON (Override a xs)
-
-instance
-  ( Coercible a (Using ms a xs)
-  , Aeson.FromJSON (Using ms a xs)
-  ) => Aeson.FromJSON (Overridden ms a xs)
-  where
-  parseJSON = coerce . Aeson.parseJSON @(Using ms a xs)
+  , GFromJSON Zero (Rep (Override a xs))
+  ) => FromJSON (Override a xs)

@@ -5,7 +5,7 @@ cabal-version: 1.12
 -- see: https://github.com/sol/hpack
 
 name:           generic-override-aeson
-version:        0.3.0.0
+version:        0.4.0.0
 synopsis:       Provides orphan instances necessary for integrating generic-override and aeson
 description:    Please see the README on GitHub at <https://github.com/estatico/generic-override#readme>
 category:       Generics
@@ -28,14 +28,16 @@ source-repository head
 library
   exposed-modules:
       Data.Override.Aeson
+      Data.Override.Aeson.Options.Internal
   other-modules:
       Paths_generic_override_aeson
   hs-source-dirs:
       src
+  ghc-options: -Wall
   build-depends:
       aeson >=1.4 && <3
     , base >=4.7 && <5
-    , generic-override >= 0.3.0.0 && < 0.4
+    , generic-override >= 0.4.0.0 && < 0.5
   default-language: Haskell2010
 
 test-suite generic-override-aeson-test
@@ -46,7 +48,7 @@ test-suite generic-override-aeson-test
       Paths_generic_override_aeson
   hs-source-dirs:
       test
-  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  ghc-options: -Wall -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       aeson >=1.4 && <3
     , base >=4.7 && <5

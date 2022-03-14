@@ -1,5 +1,6 @@
 {-# LANGUAGE BlockArguments #-}
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DerivingStrategies #-}
@@ -13,16 +14,17 @@
 {-# LANGUAGE TypeOperators #-}
 module Main where
 
-import Data.Aeson (FromJSON(parseJSON), ToJSON(toJSON), Result(Success), fromJSON)
+import Data.Aeson (FromJSON(parseJSON), Result(Success), ToJSON(toJSON), Value, fromJSON)
 import Data.Aeson.QQ.Simple (aesonQQ)
-import Data.Override (Override(Override), As, With)
-import Data.Override.Aeson ()
+import Data.Override (Override(Override), As, At, With)
+import Data.Override.Aeson (AesonOption(..), WithAesonOptions(..))
 import Data.Text (Text)
 import GHC.Generics (Generic)
 import LispCaseAeson (LispCase(LispCase))
-import qualified Data.Text as Text
 import Test.Hspec
 import Text.Read (readMaybe)
+
+import qualified Data.Text as Text
 
 main :: IO ()
 main = hspec do
@@ -34,6 +36,8 @@ main = hspec do
     it "Rec5" testRec5
     it "Rec6" testRec6
     it "Rec7" testRec6
+    it "Sum1" testSum1
+    it "Options1" testOptions1
 
 newtype Uptext = Uptext { unUptext :: Text }
 
@@ -44,7 +48,6 @@ newtype Shown a = Shown { unShown :: a }
 
 instance (Show a) => ToJSON (Shown a) where
   toJSON = toJSON . show . unShown
-
 instance (Read a) => FromJSON (Shown a) where
   parseJSON v = do
     s <- parseJSON v
@@ -80,8 +83,8 @@ data Rec1 = Rec1
 
 testRec1 :: IO ()
 testRec1 = do
-  let r = Rec1 { foo = 12, bar = "hi", baz = "bye" }
-  toJSON r `shouldBe` [aesonQQ|
+  toJSON Rec1 { foo = 12, bar = "hi", baz = "bye" }
+    `shouldBe` [aesonQQ|
     {
       "foo": "12",
       "bar": "hi",
@@ -103,8 +106,8 @@ data Rec2 = Rec2
 
 testRec2 :: IO ()
 testRec2 = do
-  let r = Rec2 { foo = 12, bar = "hi", baz = "bye" }
-  toJSON r `shouldBe` [aesonQQ|
+  toJSON Rec2 { foo = 12, bar = "hi", baz = "bye" }
+    `shouldBe` [aesonQQ|
     {
       "foo": 12,
       "bar": "HI",
@@ -127,8 +130,8 @@ data Rec3 = Rec3
 
 testRec3 :: IO ()
 testRec3 = do
-  let r = Rec3 { foo = 12, bar = "hi", baz = "bye" }
-  toJSON r `shouldBe` [aesonQQ|
+  toJSON Rec3 { foo = 12, bar = "hi", baz = "bye" }
+    `shouldBe` [aesonQQ|
     {
       "foo": "12",
       "bar": ["h", "i"],
@@ -151,8 +154,8 @@ data Rec4 = Rec4
 
 testRec4 :: IO ()
 testRec4 = do
-  let r = Rec4 { foo = "go", bar = "hi", baz = "bye" }
-  toJSON r `shouldBe` [aesonQQ|
+  toJSON Rec4 { foo = "go", bar = "hi", baz = "bye" }
+    `shouldBe` [aesonQQ|
     {
       "foo": ["g", "o"],
       "bar": ["h", "i"],
@@ -175,14 +178,14 @@ data Rec5 = Rec5
 
 testRec5 :: IO ()
 testRec5 = do
-  let r = Rec5 { fooBar = 1, baz = "hi", quuxSpamEggs = "bye" }
-  toJSON r `shouldBe` [aesonQQ|
-    {
-      "foo-bar": "1",
-      "baz": "HI",
-      "quux-spam-eggs": ["b", "y", "e"]
-    }
-  |]
+  toJSON Rec5 { fooBar = 1, baz = "hi", quuxSpamEggs = "bye" }
+    `shouldBe` [aesonQQ|
+      {
+        "foo-bar": "1",
+        "baz": "HI",
+        "quux-spam-eggs": ["b", "y", "e"]
+      }
+    |]
 
 -- Test 'Override' for both 'ToJSON' and 'FromJSON'.
 data Rec6 = Rec6
@@ -198,16 +201,14 @@ data Rec6 = Rec6
 
 testRec6 :: IO ()
 testRec6 = do
-  let r = Rec6 { foo = 1, bar = "hi", baz = "bye" }
-  let j = [aesonQQ|
-    {
-      "foo": "1",
-      "bar": ["h", "i"],
-      "baz": "bye"
-    }
-  |]
-  toJSON r `shouldBe` j
-  fromJSON j `shouldBe` Success r
+  Rec6 { foo = 1, bar = "hi", baz = "bye" }
+    `shouldRoundtripAs` [aesonQQ|
+      {
+        "foo": "1",
+        "bar": ["h", "i"],
+        "baz": "bye"
+      }
+    |]
 
 -- Test 'Override' for both 'ToJSON' and 'FromJSON'.
 data Rec7 = Rec7
@@ -223,13 +224,94 @@ data Rec7 = Rec7
 
 testRec7 :: IO ()
 testRec7 = do
-  let r = Rec7 { foo = 1, bar = "hi", baz = "bye" }
-  let j = [aesonQQ|
+  Rec7 { foo = 1, bar = "hi", baz = "bye" }
+    `shouldRoundtripAs` [aesonQQ|
+      {
+        "foo": "1",
+        "bar": ["h", "i"],
+        "baz": "bye"
+      }
+    |]
+
+newtype Reverse a = Reverse [a]
+
+instance (ToJSON a) => ToJSON (Reverse a) where
+  toJSON (Reverse xs) = toJSON $ reverse xs
+
+instance (FromJSON a) => FromJSON (Reverse a) where
+  parseJSON = fmap (Reverse . reverse) . parseJSON
+
+newtype Not = Not Bool
+
+instance ToJSON Not where
+  toJSON (Not b) = toJSON $ not b
+
+instance FromJSON Not where
+  parseJSON = fmap (Not . not) . parseJSON
+
+data Sum1 a =
+    Sum1List [a]
+  | Sum1Trip a Char Bool
+  | Sum1Null
+  deriving stock (Show, Eq, Generic)
+  deriving (ToJSON, FromJSON)
+    via Override (Sum1 a)
+          '[ At "Sum1List" 0 (Reverse a)
+           , At "Sum1Trip" 2 Not
+           ]
+
+testSum1 :: IO ()
+testSum1 = do
+  Sum1List ['a', 'b'] `shouldRoundtripAs` [aesonQQ|
     {
-      "foo": "1",
-      "bar": ["h", "i"],
-      "baz": "bye"
+      "tag": "Sum1List",
+      "contents": "ba"
     }
   |]
-  toJSON r `shouldBe` j
-  fromJSON j `shouldBe` Success r
+  Sum1Trip 'a' 'b' True `shouldRoundtripAs` [aesonQQ|
+    {
+      "tag": "Sum1Trip",
+      "contents": ["a", "b", false]
+    }
+  |]
+  Sum1Null @Char `shouldRoundtripAs` [aesonQQ|
+    {
+      "tag": "Sum1Null"
+    }
+  |]
+
+
+data Options1 =
+    Options1A { foo :: Maybe Int, bar :: String }
+  | Options1B Options1BBody
+  | Options1C
+    deriving stock (Eq, Show, Generic)
+    deriving (FromJSON, ToJSON)
+      via Override Options1
+            '[ "foo" `As` Maybe (Shown Int)
+             ] `WithAesonOptions`
+            '[ 'OmitNothingFields
+             , 'SumEncodingTaggedObject "type" "data"
+             ]
+
+data Options1BBody = Options1BBody { baz :: Int }
+  deriving stock (Eq, Show, Generic)
+  deriving anyclass (FromJSON, ToJSON)
+
+testOptions1 :: IO ()
+testOptions1 = do
+  Options1A { foo = Nothing, bar = "boo" }
+    `shouldRoundtripAs` [aesonQQ| { "type": "Options1A", "bar": "boo" } |]
+  Options1A { foo = Just 1, bar = "boo" }
+    `shouldRoundtripAs` [aesonQQ| { "type": "Options1A", "foo": "1", "bar": "boo" } |]
+  Options1B Options1BBody { baz = 2 }
+    `shouldRoundtripAs` [aesonQQ| { "type": "Options1B", "data": { "baz": 2 } } |]
+  Options1C
+    `shouldRoundtripAs` [aesonQQ| { "type": "Options1C" } |]
+
+shouldRoundtripAs
+  :: (ToJSON a, FromJSON a, Eq a, Show a, HasCallStack)
+  => a -> Value -> IO ()
+shouldRoundtripAs x j = do
+  toJSON x `shouldBe` j
+  fromJSON j `shouldBe` Success x
