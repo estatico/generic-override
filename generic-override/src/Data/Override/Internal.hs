@@ -79,7 +79,10 @@ class GOverride' (i :: Inspect) (xs :: [*]) (f :: * -> *) where
 instance (GOverride' i xs f) => GOverride' i xs (M1 D c f) where
   type OverrideRep i xs (M1 D c f) = M1 D c (OverrideRep i xs f)
   overrideFrom (M1 x) = M1 (overrideFrom @i @xs x)
+  {-# INLINE overrideFrom #-}
+
   overrideTo (M1 x) = M1 (overrideTo @i @xs x)
+  {-# INLINE overrideTo #-}
 
 instance
   ( GOverride' ('Inspect ('Just conName) ms mp) xs f
@@ -93,7 +96,10 @@ instance
             (OverrideRep ('Inspect ('Just conName) ms mp) xs f)
 
   overrideFrom (M1 x) = M1 (overrideFrom @('Inspect ('Just conName) ms mp) @xs x)
+  {-# INLINE overrideFrom #-}
+
   overrideTo (M1 x) = M1 (overrideTo @('Inspect ('Just conName) ms mp) @xs x)
+  {-# INLINE overrideTo #-}
 
 instance
   ( GOverride' ('Inspect mc ms ('Just 0)) xs f
@@ -107,10 +113,12 @@ instance
   overrideFrom (f :*: g) =
     overrideFrom @('Inspect mc ms ('Just 0)) @xs f
       :*: overrideFrom @('Inspect mc ms ('Just 1)) @xs g
+  {-# INLINE overrideFrom #-}
 
   overrideTo (f :*: g) =
     overrideTo @('Inspect mc ms ('Just 0)) @xs f
       :*: overrideTo @('Inspect mc ms ('Just 1)) @xs g
+  {-# INLINE overrideTo #-}
 
 instance
   ( GOverride' ('Inspect mc ms ('Just p)) xs f
@@ -124,10 +132,12 @@ instance
   overrideFrom (f :*: g) =
     overrideFrom @('Inspect mc ms ('Just p)) @xs f
       :*: overrideFrom @('Inspect mc ms ('Just (p + 1))) @xs g
+  {-# INLINE overrideFrom #-}
 
   overrideTo (f :*: g) =
     overrideTo @('Inspect mc ms ('Just p)) @xs f
       :*: overrideTo @('Inspect mc ms ('Just (p + 1))) @xs g
+  {-# INLINE overrideTo #-}
 
 instance
   ( GOverride' i xs f
@@ -139,10 +149,12 @@ instance
   overrideFrom = \case
     L1 f -> L1 $ overrideFrom @i @xs f
     R1 g -> R1 $ overrideFrom @i @xs g
+  {-# INLINE overrideFrom #-}
 
   overrideTo = \case
     L1 f -> L1 $ overrideTo @i @xs f
     R1 g -> R1 $ overrideTo @i @xs g
+  {-# INLINE overrideTo #-}
 
 instance
   ( GOverride' ('Inspect mc selName mp) xs f
@@ -152,7 +164,10 @@ instance
     M1 S ('MetaSel selName selSU selSS selDS) (OverrideRep ('Inspect mc selName mp) xs f)
 
   overrideFrom (M1 x) = M1 (overrideFrom @('Inspect mc selName mp) @xs x)
+  {-# INLINE overrideFrom #-}
+
   overrideTo (M1 x) = M1 (overrideTo @('Inspect mc selName mp) @xs x)
+  {-# INLINE overrideTo #-}
 
 instance
   ( Coercible a (Using ('Inspect mc ms ('Just 0)) a xs)
@@ -162,8 +177,10 @@ instance
     K1 R (Using ('Inspect mc ms ('Just 0)) a xs)
 
   overrideFrom (K1 a) = K1 (coerce a :: Using ('Inspect mc ms ('Just 0)) a xs)
+  {-# INLINE overrideFrom #-}
 
   overrideTo (K1 u) = K1 (coerce u :: a)
+  {-# INLINE overrideTo #-}
 
 instance
   ( Coercible a (Using ('Inspect mc ms ('Just p)) a xs)
@@ -173,13 +190,18 @@ instance
     K1 R (Using ('Inspect mc ms ('Just p)) a xs)
 
   overrideFrom (K1 a) = K1 (coerce a :: Using ('Inspect mc ms ('Just p)) a xs)
+  {-# INLINE overrideFrom #-}
 
   overrideTo (K1 u) = K1 (coerce u :: a)
+  {-# INLINE overrideTo #-}
 
 instance GOverride' i xs U1 where
   type OverrideRep i xs U1 = U1
   overrideFrom U1 = U1
+  {-# INLINE overrideFrom #-}
+
   overrideTo U1 = U1
+  {-# INLINE overrideTo #-}
 
 data Inspect =
   Inspect
