@@ -39,8 +39,13 @@ override :: a -> proxy xs -> Override a xs
 override a _ = Override a
 
 -- | Used to construct a type-level override. Usually used infix.
--- The @o@ should be either a type (kind '*') or a type-level string
--- (kind 'Symbol').
+-- The @o@ should target either the type to override or the field
+-- name as a 'Symbol' to override.
+--
+-- If specifying a type, it can be one of no arity
+-- (e.g. 'Int') or one with arity (e.g. 'Either') up to 10 type parameters.
+-- When specifying a type, the @o@ and @n@ types should have the same kind;
+-- otherwise, the rule will not match.
 data As (o :: k) n
 
 -- | Used to wrap a field into a something of kind @* -> *@, for example another newtype.
