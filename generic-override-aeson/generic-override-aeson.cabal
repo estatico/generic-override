@@ -1,9 +1,5 @@
 cabal-version: 1.12
 
--- This file has been generated from package.yaml by hpack version 0.34.4.
---
--- see: https://github.com/sol/hpack
-
 name:           generic-override-aeson
 version:        0.4.0.0
 synopsis:       Provides orphan instances necessary for integrating generic-override and aeson
@@ -29,6 +25,8 @@ library
   exposed-modules:
       Data.Override.Aeson
       Data.Override.Aeson.Options.Internal
+      Data.Override.Aeson.Options.StringModifier
+      Data.Override.Aeson.Options.StringModifier.Internal
   other-modules:
       Paths_generic_override_aeson
   hs-source-dirs:
@@ -55,5 +53,6 @@ test-suite generic-override-aeson-test
     , generic-override
     , generic-override-aeson
     , hspec
+    , regex-compat
     , text
   default-language: Haskell2010

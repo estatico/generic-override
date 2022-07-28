@@ -7,6 +7,8 @@
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -18,12 +20,17 @@ import Data.Aeson (FromJSON(parseJSON), Result(Success), ToJSON(toJSON), Value, 
 import Data.Aeson.QQ.Simple (aesonQQ)
 import Data.Override (Override(Override), As, At, With)
 import Data.Override.Aeson (AesonOption(..), WithAesonOptions(..))
+import Data.Override.Aeson.Options.StringModifier (AtHead, AutoStripDataPrefix, Drop, ToLower)
+import Data.Proxy (Proxy(..))
 import Data.Text (Text)
 import GHC.Generics (Generic)
+import GHC.TypeLits (KnownSymbol, Symbol, symbolVal)
 import LispCaseAeson (LispCase(LispCase))
 import Test.Hspec
 import Text.Read (readMaybe)
+import Text.Regex (mkRegex, subRegex)
 
+import qualified Data.Override.Aeson.Options.StringModifier.Internal as Internal
 import qualified Data.Text as Text
 
 main :: IO ()
@@ -38,6 +45,9 @@ main = hspec do
     it "Rec7" testRec6
     it "Sum1" testSum1
     it "Options1" testOptions1
+    it "Options2" testOptions2
+    it "Options3" testOptions3
+    it "Options4" testOptions4
 
 newtype Uptext = Uptext { unUptext :: Text }
 
@@ -309,9 +319,69 @@ testOptions1 = do
   Options1C
     `shouldRoundtripAs` [aesonQQ| { "type": "Options1C" } |]
 
+data Options2 = Options2
+  { options2Bar :: Int
+  , options2Baz :: String
+  } deriving stock (Eq, Show, Generic)
+    deriving (FromJSON, ToJSON)
+      via WithAesonOptions Options2
+        '[ 'FieldLabelModifier
+              '[ AtHead '[ ToLower ]
+               , Drop 8
+               ]
+         ]
+
+testOptions2 :: IO ()
+testOptions2 = do
+  Options2 { options2Bar = 1, options2Baz = "spam" }
+    `shouldRoundtripAs` [aesonQQ| { "bar": 1, "baz": "spam" } |]
+
+data Options3 = Options3
+  { options3Spam :: Int
+  , options3Eggs :: String
+  , options3 :: [Int]
+  , baz :: Bool
+  } deriving stock (Eq, Show, Generic)
+    deriving (FromJSON, ToJSON)
+      via WithAesonOptions Options3
+        '[ 'FieldLabelModifier '[ AutoStripDataPrefix ]
+         ]
+
+testOptions3 :: IO ()
+testOptions3 = do
+  Options3 { options3Spam = 2, options3Eggs = "raw", options3 = [], baz = True }
+    `shouldRoundtripAs` [aesonQQ| { "spam": 2, "eggs": "raw", "options3": [], "baz": true } |]
+
+data Options4 = Options4
+  { spoonula :: Int
+  , spatula :: Int
+  , arugula :: Int
+  } deriving stock (Eq, Show, Generic)
+    deriving (FromJSON, ToJSON)
+      via WithAesonOptions Options4
+        '[ 'FieldLabelModifier '[ SubRegex "(nula|tula)" "\\1e" ]
+         ]
+
+testOptions4 :: IO ()
+testOptions4 = do
+  Options4 { spoonula = 3, spatula = 2, arugula = 1 }
+    `shouldRoundtripAs` [aesonQQ| { "spoonulae": 3, "spatulae": 2, "arugula": 1 } |]
+
+
 shouldRoundtripAs
   :: (ToJSON a, FromJSON a, Eq a, Show a, HasCallStack)
   => a -> Value -> IO ()
 shouldRoundtripAs x j = do
   toJSON x `shouldBe` j
   fromJSON j `shouldBe` Success x
+
+-- | Demonstrates extensibility of 'StringModifier'.
+data SubRegex (find :: Symbol) (replace :: Symbol)
+instance
+  ( KnownSymbol find
+  , KnownSymbol replace
+  ) => Internal.StringModifier a (SubRegex find replace)
+  where
+  stringModifier s = subRegex regex s $ symbolVal $ Proxy @replace
+    where
+    regex = mkRegex $ symbolVal $ Proxy @find

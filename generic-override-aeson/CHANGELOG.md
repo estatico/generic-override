@@ -1,5 +1,10 @@
 # Changelog for generic-override-aeson
 
+## Unreleased changes
+
+* Add `FieldLabelModifier` and `ConstructorTagModifier`
+* Add (internal) `StringModifier` machinery
+
 ## 0.4.0.0
 
 * Add `WithAesonOptions` support
