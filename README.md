@@ -1,7 +1,5 @@
 # generic-override
 
-[![Build](https://img.shields.io/travis/estatico/generic-override.svg?logo=travis)](http://travis-ci.org/estatico/generic-override)
-
 | Library                | Version |
 | ---------------------- | ------- |
 | generic-override       | [![generic-override](https://img.shields.io/hackage/v/generic-override.svg?logo=haskell&color=blueviolet)](https://hackage.haskell.org/package/generic-override) |
