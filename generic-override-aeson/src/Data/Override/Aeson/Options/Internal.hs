@@ -1,10 +1,12 @@
 -- | This is the internal generic-override-aeson API and should be considered
 -- unstable and subject to change. In general, you should prefer to use the
 -- public, stable API provided by "Data.Override.Aeson".
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE KindSignatures #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeApplications #-}
 {-# LANGUAGE TypeOperators #-}
@@ -13,6 +15,7 @@ module Data.Override.Aeson.Options.Internal where
 
 import Data.Aeson
 import Data.Coerce (coerce)
+import Data.Override.Aeson.Options.StringModifier.Internal (StringModifiers(stringModifiers))
 import Data.Proxy (Proxy(..))
 import GHC.Generics (Generic, Rep)
 import GHC.TypeLits (KnownSymbol, Symbol, symbolVal)
@@ -24,22 +27,22 @@ import qualified Data.Aeson as Aeson
 newtype WithAesonOptions (a :: *) (options :: [AesonOption]) = WithAesonOptions a
 
 instance
-  ( ApplyAesonOptions options
+  ( ApplyAesonOptions a options
   , Generic a
   , Aeson.GToJSON Aeson.Zero (Rep a)
   , Aeson.GToEncoding Aeson.Zero (Rep a)
   ) => ToJSON (WithAesonOptions a options)
   where
-  toJSON = coerce $ genericToJSON @a $ applyAesonOptions (Proxy @options) defaultOptions
-  toEncoding = coerce $ genericToEncoding @a $ applyAesonOptions (Proxy @options) defaultOptions
+  toJSON = coerce $ genericToJSON @a $ applyAesonOptions @a (Proxy @options) defaultOptions
+  toEncoding = coerce $ genericToEncoding @a $ applyAesonOptions @a (Proxy @options) defaultOptions
 
 instance
-  ( ApplyAesonOptions options
+  ( ApplyAesonOptions a options
   , Generic a
   , Aeson.GFromJSON Aeson.Zero (Rep a)
   ) => FromJSON (WithAesonOptions a options)
   where
-  parseJSON = coerce $ genericParseJSON @a $ applyAesonOptions (Proxy @options) defaultOptions
+  parseJSON = coerce $ genericParseJSON @a $ applyAesonOptions @a (Proxy @options) defaultOptions
 
 -- | Provides a type-level subset of fields from 'Options'
 data AesonOption =
@@ -51,49 +54,57 @@ data AesonOption =
   | SumEncodingTwoElemArray -- ^ Equivalient to @'sumEncoding' = 'TwoElemArray'@
   | UnwrapUnaryRecords -- ^ Equivalient to @'unwrapUnaryRecords' = True@
   | TagSingleConstructors -- ^ Equivalient to @'tagSingleConstructors' = True@
+  | FieldLabelModifier [*] -- ^ Equivalient to @'fieldLabelModifier'
+  | ConstructorTagModifier [*] -- ^ Equivalient to @'constructorTagModifier'
 
 -- | Updates 'Options' given a type-level list of 'AesonOption'.
-class ApplyAesonOptions (options :: [AesonOption]) where
+class ApplyAesonOptions a (options :: [AesonOption]) where
   applyAesonOptions :: Proxy options -> Options -> Options
 
-instance ApplyAesonOptions '[] where
+instance ApplyAesonOptions a '[] where
   applyAesonOptions _ = id
 
 instance
-  ( ApplyAesonOption option
-  , ApplyAesonOptions options
-  ) => ApplyAesonOptions (option ': options)
+  ( ApplyAesonOption a option
+  , ApplyAesonOptions a options
+  ) => ApplyAesonOptions a (option ': options)
   where
   applyAesonOptions _ =
-    applyAesonOption (Proxy @option) . (applyAesonOptions (Proxy @options))
+    applyAesonOption @a (Proxy @option) . (applyAesonOptions @a (Proxy @options))
 
 -- | Updates 'Options' given a single type-level 'AesonOption'.
-class ApplyAesonOption (option :: AesonOption) where
+class ApplyAesonOption a (option :: AesonOption) where
   applyAesonOption :: Proxy option -> Options -> Options
 
-instance ApplyAesonOption ('AllNullaryToStringTag 'True) where
+instance ApplyAesonOption a ('AllNullaryToStringTag 'True) where
   applyAesonOption _ o = o { allNullaryToStringTag = True }
 
-instance ApplyAesonOption ('AllNullaryToStringTag 'False) where
+instance ApplyAesonOption a ('AllNullaryToStringTag 'False) where
   applyAesonOption _ o = o { allNullaryToStringTag = False }
 
-instance ApplyAesonOption 'OmitNothingFields where
+instance ApplyAesonOption a 'OmitNothingFields where
   applyAesonOption _ o = o { omitNothingFields = True }
 
-instance (KnownSymbol k, KnownSymbol v) => ApplyAesonOption ('SumEncodingTaggedObject k v) where
+instance (KnownSymbol k, KnownSymbol v) => ApplyAesonOption a ('SumEncodingTaggedObject k v) where
   applyAesonOption _ o = o { sumEncoding = TaggedObject (symbolVal (Proxy @k)) (symbolVal (Proxy @v)) }
 
-instance ApplyAesonOption 'SumEncodingUntaggedValue where
+instance ApplyAesonOption a 'SumEncodingUntaggedValue where
   applyAesonOption _ o = o { sumEncoding = UntaggedValue }
 
-instance ApplyAesonOption 'SumEncodingObjectWithSingleField where
+instance ApplyAesonOption a 'SumEncodingObjectWithSingleField where
   applyAesonOption _ o = o { sumEncoding = ObjectWithSingleField }
 
-instance ApplyAesonOption 'SumEncodingTwoElemArray where
+instance ApplyAesonOption a 'SumEncodingTwoElemArray where
   applyAesonOption _ o = o { sumEncoding = TwoElemArray }
 
-instance ApplyAesonOption 'UnwrapUnaryRecords where
+instance ApplyAesonOption a 'UnwrapUnaryRecords where
   applyAesonOption _ o = o { unwrapUnaryRecords = True }
 
-instance ApplyAesonOption 'TagSingleConstructors where
+instance ApplyAesonOption a 'TagSingleConstructors where
   applyAesonOption _ o = o { tagSingleConstructors = True }
+
+instance (StringModifiers a fs) => ApplyAesonOption a ('FieldLabelModifier fs) where
+  applyAesonOption _ o = o { fieldLabelModifier = stringModifiers @a @fs }
+
+instance (StringModifiers a fs) => ApplyAesonOption a ('ConstructorTagModifier fs) where
+  applyAesonOption _ o = o { constructorTagModifier = stringModifiers @a @fs }
